@@ -7,13 +7,27 @@ $(NAME): all
 
 # コンテナ起動 バックグラウンド
 .PHONY: all
-all:
+all: build-server
 	docker compose -p $(NAME) up -d
+	air
+
+.PHONY: build-server
+build-server:
+	go build -o server ./cmd/main.go
+
+.PHONY: run-server
+run-server:
+	go run ./cmd/main.go
+
+.PHONY: run-server-air
+run-server-air:
+	air
 
 # コンテナ起動 フォアグラウンド(ログを見たいとき)
 .PHONY: up-logs
-up-logs:
+up-logs: build-server
 	docker compose -p $(NAME) up
+	air
 
 # コンテナを停止
 .PHONY: stop
