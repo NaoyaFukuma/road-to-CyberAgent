@@ -9,3 +9,9 @@ CREATE TABLE IF NOT EXISTS `user` (
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'ユーザ';
+
+CREATE TABLE IF NOT EXISTS `game_settings` (
+  `id` INT NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `gacha_coin_consumption` INT NOT NULL COMMENT 'ガチャ1回あたりのコイン消費量',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='ゲーム設定情報';
