@@ -7,7 +7,7 @@ db/data
 *.dll
 *.so
 *.dylib
-server
+CA_Tech_Dojo_API
 
 # Test binary, build with `go test -c`
 *.test

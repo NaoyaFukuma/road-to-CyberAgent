@@ -12,7 +12,7 @@ all: build-server
 
 .PHONY: build-server
 build-server:
-	go build -o server ./cmd/main.go
+	go build -o CA_Tech_Dojo_API ./cmd/main.go
 
 .PHONY: run-server
 run-server:
@@ -31,6 +31,11 @@ up-logs: build-server
 .PHONY: stop
 stop:
 	docker compose -p $(NAME) stop
+
+# 実行ファイルを削除
+.PHONY: clean
+clean:
+	rm -f CA_Tech_Dojo_API
 
 # プログラムに関連するコンテナだけを停止し削除
 .PHONY: clean-containers
