@@ -21,4 +21,4 @@ server
 
 # air
 .air.toml
-./tmp 
+tmp/* 

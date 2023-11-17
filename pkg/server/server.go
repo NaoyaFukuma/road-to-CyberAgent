@@ -4,19 +4,34 @@ import (
 	"log"
 	"net/http"
 
+	"42tokyo-road-to-dojo-go/pkg/http/middleware"
+	"42tokyo-road-to-dojo-go/pkg/repositories"
 	"42tokyo-road-to-dojo-go/pkg/server/handler"
 )
 
-// Serve HTTPサーバを起動する
-func Serve(addr string) {
+func Serve(addr string, repos *repositories.Repositories) {
+	/* ルーティング設定 */
+	// ゲーム設定関連
+	http.HandleFunc("/setting/get", get(handler.HandleSettingGet(repos)))
+	http.HandleFunc("/setting/all", get(handler.HandleAllSettingGet(repos)))
+	http.HandleFunc("/setting/get_by_id", get(handler.HandleGetGameSettingsByID(repos)))
 
-	/* ===== URLマッピングを行う ===== */
-	http.HandleFunc("/setting/get", get(handler.HandleSettingGet()))
+	// ユーザ関連
+	http.HandleFunc("/user/create", post(handler.HandleUserCreate(repos)))
+	http.HandleFunc("/user/get", get(middleware.Authenticate(repos, handler.HandleUserGet(repos))))
+	http.HandleFunc("/user/update", post(middleware.Authenticate(repos, handler.HandleUserUpdate(repos))))
 
-	// TODO: 認証を行うmiddlewareを実装する
-	// middlewareは pkg/http/middleware パッケージを利用する
-	// http.HandleFunc("/user/get",
-	//   get(middleware.Authenticate(handler.HandleUserGet())))
+	// 所持アイテム関連
+	http.HandleFunc("/collection/list", get(middleware.Authenticate(repos, handler.HandleGetCollectionList(repos))))
+
+	// ランキング関連
+	http.HandleFunc("/ranking/list", get(middleware.Authenticate(repos, handler.HandleGetRankingList(repos))))
+
+	// ゲーム関連
+	http.HandleFunc("/game/finish", post(middleware.Authenticate(repos, handler.HandleGameFinish(repos))))
+
+	// ガチャ関連
+	http.HandleFunc("/gacha/draw", post(middleware.Authenticate(repos, handler.HandleGachaDraw(repos))))
 
 	/* ===== サーバの起動 ===== */
 	log.Println("Server running...")

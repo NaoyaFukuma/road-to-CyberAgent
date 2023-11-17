@@ -9,7 +9,6 @@ $(NAME): all
 .PHONY: all
 all: build-server
 	docker compose -p $(NAME) up -d
-	air
 
 .PHONY: build-server
 build-server:
@@ -27,7 +26,6 @@ run-server-air:
 .PHONY: up-logs
 up-logs: build-server
 	docker compose -p $(NAME) up
-	air
 
 # コンテナを停止
 .PHONY: stop
