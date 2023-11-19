@@ -10,6 +10,7 @@ import (
 
 type UserScoresRepository interface {
 	AddUserScore(userID entities.UserID, score entities.Score) error
+	AddUserScoreTransaction(tx *sql.Tx, userID entities.UserID, score entities.Score) error
 	GetUserScoreWithUserName(offset int64, limit entities.RankingListLimit) (*entities.UserScoresJoinedUserName, error)
 }
 
@@ -24,6 +25,16 @@ type userScoresRepository struct {
 func (r *userScoresRepository) AddUserScore(userID entities.UserID, score entities.Score) error {
 	query := "INSERT INTO user_scores (user_id, score) VALUES (?, ?)"
 	_, err := r.db.Exec(query, userID, score)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
+}
+
+func (r *userScoresRepository) AddUserScoreTransaction(tx *sql.Tx, userID entities.UserID, score entities.Score) error {
+	query := "INSERT INTO user_scores (user_id, score) VALUES (?, ?)"
+	_, err := tx.Exec(query, userID, score)
 	if err != nil {
 		log.Println(err)
 		return err

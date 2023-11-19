@@ -49,7 +49,7 @@ func HandleGameFinish(repos *repositories.Repositories) http.HandlerFunc {
 
 		// user_scoresテーブルにスコアを登録
 		userScoresRepo := repos.UserScoresRepository
-		err = userScoresRepo.AddUserScore(userID, entities.Score(scoreInt))
+		err = userScoresRepo.AddUserScoreTransaction(tx, userID, entities.Score(scoreInt))
 		if err != nil {
 			if err := tx.Rollback(); err != nil {
 				log.Println(err)
@@ -73,7 +73,7 @@ func HandleGameFinish(repos *repositories.Repositories) http.HandlerFunc {
 			return
 		}
 		if user.HighScore < entities.Score(scoreInt) {
-			err = userRepo.UpdateUserHighScoreByID(userID, entities.Score(scoreInt))
+			err = userRepo.UpdateUserHighScoreByIDTransaction(tx, userID, entities.Score(scoreInt))
 			if err != nil {
 				if err := tx.Rollback(); err != nil {
 					log.Println(err)

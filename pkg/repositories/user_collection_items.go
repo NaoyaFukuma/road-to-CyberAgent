@@ -9,8 +9,8 @@ import (
 
 type CollectionItemRepository interface {
 	GetCollectionItems(userID entities.UserID) (*[]entities.ItemID, error)
-	AddCollectionItem(userID entities.UserID, itemID entities.ItemID) error
-	AddCollectionItemTransaction(tx *sql.Tx, userID entities.UserID, itemID entities.ItemID) error
+	AddCollectionItems(userID entities.UserID, itemIDs []entities.ItemID) error
+	AddCollectionItemsTransaction(tx *sql.Tx, userID entities.UserID, itemIDs []entities.ItemID) error
 }
 
 func NewCollectionItemRepository(db *sql.DB) CollectionItemRepository {
@@ -53,10 +53,28 @@ func (r *collectionItemRepository) GetCollectionItems(userID entities.UserID) (*
 }
 
 // 所持アイテムを追加する。重複追加は発生しない。
-func (r *collectionItemRepository) AddCollectionItem(userID entities.UserID, itemID entities.ItemID) error {
-	query := "INSERT INTO user_items (user_id, item_id) VALUES (?, ?)"
+func (r *collectionItemRepository) AddCollectionItems(userID entities.UserID, itemIDs []entities.ItemID) error {
+	if len(itemIDs) == 0 {
+		return nil // 追加するアイテムがない場合は、何もしない
+	}
 
-	_, err := r.db.Exec(query, userID, itemID)
+	// クエリのベースを作成
+	query := "INSERT INTO user_items (user_id, item_id) VALUES "
+
+	// パラメータのスライスを作成
+	var params []interface{}
+
+	// 各アイテムIDについて、クエリを構築
+	for _, itemID := range itemIDs {
+		query += "(?, ?),"
+		params = append(params, userID, itemID)
+	}
+
+	// 最後のカンマを削除
+	query = query[:len(query)-1]
+
+	// クエリを実行
+	_, err := r.db.Exec(query, params...)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -64,11 +82,29 @@ func (r *collectionItemRepository) AddCollectionItem(userID entities.UserID, ite
 	return nil
 }
 
-// 所持アイテムを追加する。重複追加は発生しない。
-func (r *collectionItemRepository) AddCollectionItemTransaction(tx *sql.Tx, userID entities.UserID, itemID entities.ItemID) error {
-	query := "INSERT INTO user_items (user_id, item_id) VALUES (?, ?)"
+// 複数の所持アイテムを追加する。重複追加は発生しない。
+func (r *collectionItemRepository) AddCollectionItemsTransaction(tx *sql.Tx, userID entities.UserID, itemIDs []entities.ItemID) error {
+	if len(itemIDs) == 0 {
+		return nil // 追加するアイテムがない場合は、何もしない
+	}
 
-	_, err := execQueryAndReturnAffectedRows(tx, query, userID, itemID)
+	// クエリのベースを作成
+	query := "INSERT INTO user_items (user_id, item_id) VALUES "
+
+	// パラメータのスライスを作成
+	var params []interface{}
+
+	// 各アイテムIDについて、クエリを構築
+	for _, itemID := range itemIDs {
+		query += "(?, ?),"
+		params = append(params, userID, itemID)
+	}
+
+	// 最後のカンマを削除
+	query = query[:len(query)-1]
+
+	// トランザクション内でクエリを実行
+	_, err := tx.Exec(query, params...)
 	if err != nil {
 		log.Println(err)
 		return err

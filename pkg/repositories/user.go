@@ -17,6 +17,7 @@ type UserRepository interface {
 	UpdateUserCoinsByID(ID entities.UserID, coin entities.Coin) error
 	UpdateUserCoinsByIDTransaction(tx *sql.Tx, ID entities.UserID, coin entities.Coin) error
 	UpdateUserHighScoreByID(ID entities.UserID, score entities.Score) error
+	UpdateUserHighScoreByIDTransaction(tx *sql.Tx, ID entities.UserID, score entities.Score) error
 	DeleteUserByID(ID entities.UserID) error
 }
 
@@ -145,6 +146,17 @@ func (r *userRepository) UpdateUserCoinsByIDTransaction(tx *sql.Tx, ID entities.
 func (r *userRepository) UpdateUserHighScoreByID(ID entities.UserID, highScore entities.Score) error {
 	query := "UPDATE user SET high_score = ? WHERE id = ?"
 	_, err := execQueryAndReturnAffectedRows(r.db, query, highScore, ID)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func (r *userRepository) UpdateUserHighScoreByIDTransaction(tx *sql.Tx, ID entities.UserID, highScore entities.Score) error {
+	query := "UPDATE user SET high_score = ? WHERE id = ?"
+	_, err := execQueryAndReturnAffectedRows(tx, query, highScore, ID)
 	if err != nil {
 		log.Println(err)
 		return err

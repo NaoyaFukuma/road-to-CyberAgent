@@ -178,6 +178,8 @@ func HandleGachaDraw(repos *repositories.Repositories) http.HandlerFunc {
 			collectionItemMap[collectionItem] = true
 		}
 
+		// isNewのアイテムIDを格納するためのスライス
+		var isNewItemIDs []entities.ItemID
 		for _, gachaGetID := range gachaGetIDs {
 			if _, ok := collectionItemMap[gachaGetID]; ok {
 				gachaResultList.Items = append(gachaResultList.Items, entities.GachaResult{
@@ -187,16 +189,7 @@ func HandleGachaDraw(repos *repositories.Repositories) http.HandlerFunc {
 					IsNew:  false,
 				})
 			} else {
-				err = collectionItemRepo.AddCollectionItemTransaction(tx, userID, gachaGetID)
-				if err != nil {
-					if err := tx.Rollback(); err != nil {
-						log.Println(err)
-						response.SetStatusAndJson(writer, http.StatusInternalServerError, map[string]string{"error": err.Error()})
-					}
-					log.Println(err)
-					response.SetStatusAndJson(writer, http.StatusInternalServerError, map[string]string{"error": err.Error()})
-					return
-				}
+				isNewItemIDs = append(isNewItemIDs, gachaGetID)
 				collectionItemMap[gachaGetID] = true
 				gachaResultList.Items = append(gachaResultList.Items, entities.GachaResult{
 					ID:     gachaGetID,
@@ -205,7 +198,18 @@ func HandleGachaDraw(repos *repositories.Repositories) http.HandlerFunc {
 					IsNew:  true,
 				})
 			}
+		}
 
+		// 所持アイテムに加える処理
+		err = collectionItemRepo.AddCollectionItemsTransaction(tx, userID, isNewItemIDs)
+		if err != nil {
+			if err := tx.Rollback(); err != nil {
+				log.Println(err)
+				response.SetStatusAndJson(writer, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			}
+			log.Println(err)
+			response.SetStatusAndJson(writer, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			return
 		}
 
 		// commit

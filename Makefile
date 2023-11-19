@@ -34,8 +34,6 @@ stop:
 
 # 実行ファイルを削除
 .PHONY: clean
-clean:
-	rm -f CA_Tech_Dojo_API
 
 # プログラムに関連するコンテナだけを停止し削除
 .PHONY: clean-containers
@@ -47,7 +45,7 @@ clean-containers:
 clean-images:
 	docker compose -p $(NAME) down --rmi local
 
-# プロジェクトに関連するコンテナとボリュームを削除
+# プロジェクトに関連するコンテナとボリュームを削除W
 .PHONY: clean-volumes
 clean-volumes:
 	docker compose -p $(NAME) down -v --remove-orphans
